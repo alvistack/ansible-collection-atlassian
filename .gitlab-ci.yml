@@ -1,0 +1,299 @@
+---
+
+.script-git-submodule: &script-git-submodule
+  - |
+    git submodule sync --recursive
+    git submodule update --init --recursive
+
+.script-linters: &script-linters
+  - |
+    flake8
+    yamllint .
+    ansible-lint
+
+.script-bootstrap-python: &script-bootstrap-python
+  - |
+    if ! [[ -x "$(command -v pipx)" ]]; then
+      export DEBIAN_FRONTEND="noninteractive"
+      echo "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/home:alvistack.list
+      curl -fsSL https://downloadcontent.opensuse.org/repositories/home:alvistack/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_alvistack.gpg > /dev/null
+      sudo -E apt-get update
+      sudo -E apt-get install -y bzip2 ca-certificates curl flake8 gcc gnupg gzip iproute2 pipx procps python3 python3-apt python3-cryptography python3-flake8 python3-jmespath python3-lxml python3-netaddr python3-pip python3-setuptools python3-venv python3-virtualenv python3-wheel sudo tar unzip xz-utils yamllint zip
+    fi
+    sh -x -c "python3 --version"
+    sh -x -c "pipx --version"
+    sh -x -c "flake8 --version"
+    sh -x -c "yamllint --version"
+
+.script-bootstrap-ansible: &script-bootstrap-ansible
+  - |
+    if ! [[ -x "$(command -v ansible)" ]]; then
+      export DEBIAN_FRONTEND="noninteractive"
+      echo "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/home:alvistack.list
+      curl -fsSL https://downloadcontent.opensuse.org/repositories/home:alvistack/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_alvistack.gpg > /dev/null
+      sudo -E apt-get update
+      sudo -E apt-get install -y ansible ansible-lint python3-docker python3-netaddr python3-vagrant
+    fi
+    sh -x -c "ansible --version"
+    sh -x -c "ansible-lint --version"
+
+.script-bootstrap-molecule: &script-bootstrap-molecule
+  - |
+    if ! [[ -x "$(command -v molecule)" ]]; then
+      export DEBIAN_FRONTEND="noninteractive"
+      echo "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/home:alvistack.list
+      curl -fsSL https://downloadcontent.opensuse.org/repositories/home:alvistack/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_alvistack.gpg > /dev/null
+      sudo -E apt-get update
+      sudo -E apt-get install -y python3-molecule python3-molecule-docker python3-molecule-vagrant
+    fi
+    sh -x -c "molecule --version"
+
+.script-bootstrap-libvirt: &script-bootstrap-libvirt
+  - |
+    if ! [[ -x "$(command -v qemu-system-x86_64)" ]]; then
+      export DEBIAN_FRONTEND="noninteractive"
+      sudo -E apt-get update
+      sudo -E apt-get install -y binutils bridge-utils dnsmasq-base ebtables gcc libarchive-tools libguestfs-tools libvirt-clients libvirt-daemon-system libvirt-dev make qemu-system qemu-utils ruby-dev virt-manager
+    fi
+    sudo systemctl start libvirtd.service
+    sh -x -c "sudo systemctl status --no-pager libvirtd.service"
+    sh -x -c "qemu-system-x86_64 --version"
+    sh -x -c "virsh --version"
+
+.script-bootstrap-vagrant: &script-bootstrap-vagrant
+  - |
+    if ! [[ -x "$(command -v vagrant)" ]]; then
+      export DEBIAN_FRONTEND="noninteractive"
+      echo "deb [arch=amd64] https://apt.releases.hashicorp.com jammy main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+      curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/hashicorp.gpg > /dev/null
+      sudo -E apt-get update
+      sudo -E apt-get install -y vagrant
+      vagrant plugin install vagrant-libvirt
+    fi
+    sh -x -c "vagrant --version"
+    sh -x -c "vagrant plugin list"
+
+.script-symlink-ansible-collection: &script-symlink-ansible-collection
+  - |
+    export _COLLECTION="$(echo $CI_PROJECT_NAME | sed 's/^ansible-collection-//g')"
+    mkdir -p $HOME/.ansible/collections/ansible_collections/alvistack
+    ln -s $CI_PROJECT_DIR $HOME/.ansible/collections/ansible_collections/alvistack/$_COLLECTION
+
+.script-molecule-test: &script-molecule-test
+  - |
+    export _MOLECULE_INSTANCE_NAME="$(pwgen -1AB 12)"
+    sudo -E molecule test -s $_BOX-$_PROVIDER
+
+.script-ansible-galaxy-collection-publish: &script-ansible-galaxy-collection-publish
+  - |
+    if [[ -n "$CI_COMMIT_TAG" ]] && [[ "$CI_COMMIT_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+      export _VERSION="$CI_COMMIT_TAG"
+    elif [[ -n "$CI_COMMIT_BRANCH" ]] && [[ "$CI_COMMIT_BRANCH" =~ master ]]; then
+      export _VERSION="$(date +%Y%m%d).0.0"
+    else
+      exit 0
+    fi
+    sed -i "s/version: .*/version: $_VERSION/g" galaxy.yml
+    ansible-galaxy collection build
+    ansible-galaxy collection publish --token $ANSIBLE_GALAXY_TOKEN *.tar.gz
+
+.job-molecule-test: &job-molecule-test
+  script:
+    - *script-bootstrap-python
+    - *script-bootstrap-ansible
+    - *script-bootstrap-molecule
+    - *script-bootstrap-libvirt
+    - *script-bootstrap-vagrant
+    - *script-symlink-ansible-collection
+    - *script-molecule-test
+
+.job-ansible-galaxy-collection-publish: &job-ansible-galaxy-collection-publish
+  script:
+    - *script-bootstrap-python
+    - *script-bootstrap-ansible
+    - *script-ansible-galaxy-collection-publish
+
+default:
+  before_script:
+    - *script-git-submodule
+    - *script-linters
+  retry: 2
+
+build:ubuntu-23.10-libvirt:
+  <<: *job-molecule-test
+  stage: build
+  variables:
+    _BOX: "ubuntu-23.10"
+    _PROVIDER: "libvirt"
+
+build:ubuntu-23.04-libvirt:
+  <<: *job-molecule-test
+  stage: build
+  variables:
+    _BOX: "ubuntu-23.04"
+    _PROVIDER: "libvirt"
+
+build:ubuntu-22.04-libvirt:
+  <<: *job-molecule-test
+  stage: build
+  variables:
+    _BOX: "ubuntu-22.04"
+    _PROVIDER: "libvirt"
+
+build:ubuntu-20.04-libvirt:
+  <<: *job-molecule-test
+  stage: build
+  variables:
+    _BOX: "ubuntu-20.04"
+    _PROVIDER: "libvirt"
+
+test:centos-9-stream-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "centos-9-stream"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:centos-8-stream-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "centos-8-stream"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:centos-7-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "centos-7"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:opensuse-tumbleweed-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "opensuse-tumbleweed"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:opensuse-leap-15.5-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "opensuse-leap-15.5"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:opensuse-leap-15.4-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "opensuse-leap-15.4"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:debian-testing-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "debian-testing"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:debian-12-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "debian-12"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:debian-11-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "debian-11"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:fedora-rawhide-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "fedora-rawhide"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:fedora-39-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "fedora-39"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:fedora-38-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "fedora-38"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:fedora-37-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "fedora-37"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:rhel-9-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "rhel-9"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:rhel-8-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "rhel-8"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+test:rhel-7-libvirt:
+  <<: *job-molecule-test
+  stage: test
+  variables:
+    _BOX: "rhel-7"
+    _PROVIDER: "libvirt"
+  allow_failure: true
+  retry: 0
+
+deploy:ansible-galaxy:
+  <<: *job-ansible-galaxy-collection-publish
+  stage: deploy
+  needs:
+    - build:ubuntu-22.04-libvirt
+    - build:ubuntu-20.04-libvirt

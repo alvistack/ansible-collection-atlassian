@@ -1,0 +1,76 @@
+---
+
+# Copyright 2023 Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: 50-bamboo-install | baboo
+  hosts: baboo
+  remote_user: root
+  become: true
+  tasks:
+    - name: include role
+      ansible.builtin.include_role:
+        name: cvs
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: svn
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: git
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: mercurial
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: perforce
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: crun
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: containers_common
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: containernetworking_plugins
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: conmon
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: skopeo
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: buildah
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: podman
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: openjdk
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: bamboo
