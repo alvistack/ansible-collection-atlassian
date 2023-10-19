@@ -14,15 +14,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: 50-jira-install | jira
-  hosts: jira
+- name: 50-fisheye-verify | fisheye
+  hosts: fisheye
   remote_user: root
   become: true
   tasks:
-    - name: include role
-      ansible.builtin.include_role:
-        name: openjdk
+    - name: check port
+      ansible.builtin.wait_for:
+        port: 8060
+        timeout: 300
+        delay: 10
+      async: 300
+      poll: 10
+      register: result
+      until: result is succeeded
+      retries: 30
 
-    - name: include role
-      ansible.builtin.include_role:
-        name: jira
+    - name: check page
+      ansible.builtin.uri:
+        url: "http://localhost:8060"
+        status_code: 200
+        timeout: 300
+        return_content: true
+      async: 300
+      poll: 10
+      register: result
+      until: result.status == 200
+      retries: 30
+
+    - name: check result
+      ansible.builtin.fail:
+      when: "'fisheye' not in result.content"

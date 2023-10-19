@@ -14,20 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: import playbook 50-bamboo-verify.yml
-  import_playbook: 50-bamboo-verify.yml
+# git
+git_release: "2.42"
 
-- name: import playbook 50-bitbucket-verify.yml
-  import_playbook: 50-bitbucket-verify.yml
+# openjdk
+openjdk_release: "11"
 
-- name: import playbook 50-confluence-verify.yml
-  import_playbook: 50-confluence-verify.yml
-
-- name: import playbook 50-crowd-verify.yml
-  import_playbook: 50-crowd-verify.yml
-
-- name: import playbook 50-fisheye-verify.yml
-  import_playbook: 50-fisheye-verify.yml
-
-- name: import playbook 50-jira-verify.yml
-  import_playbook: 50-jira-verify.yml
+# bitbucket
+bitbucket_release: "8.14"
