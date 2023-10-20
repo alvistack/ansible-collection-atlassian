@@ -14,15 +14,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: 50-jira-install | jira
-  hosts: jira
+- name: 50-fisheye-install | fisheye
+  hosts: fisheye
   remote_user: root
   become: true
   tasks:
+    - name: include role
+      ansible.builtin.include_role:
+        name: cvs
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: svn
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: git
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: mercurial
+
+    - name: include role
+      ansible.builtin.include_role:
+        name: perforce
+
     - name: include role
       ansible.builtin.include_role:
         name: openjdk
 
     - name: include role
       ansible.builtin.include_role:
-        name: jira
+        name: fisheye

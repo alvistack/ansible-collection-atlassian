@@ -14,20 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: import playbook 50-bamboo-verify.yml
-  import_playbook: 50-bamboo-verify.yml
+- name: 50-bitbucket-install | bitbucket
+  hosts: bitbucket
+  remote_user: root
+  become: true
+  tasks:
+    - name: include role
+      ansible.builtin.include_role:
+        name: git
 
-- name: import playbook 50-bitbucket-verify.yml
-  import_playbook: 50-bitbucket-verify.yml
+    - name: include role
+      ansible.builtin.include_role:
+        name: openjdk
 
-- name: import playbook 50-confluence-verify.yml
-  import_playbook: 50-confluence-verify.yml
-
-- name: import playbook 50-crowd-verify.yml
-  import_playbook: 50-crowd-verify.yml
-
-- name: import playbook 50-fisheye-verify.yml
-  import_playbook: 50-fisheye-verify.yml
-
-- name: import playbook 50-jira-verify.yml
-  import_playbook: 50-jira-verify.yml
+    - name: include role
+      ansible.builtin.include_role:
+        name: bitbucket
