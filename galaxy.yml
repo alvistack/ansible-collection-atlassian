@@ -18,7 +18,7 @@ namespace: alvistack
 name: atlassian
 description: Ansible Collection for Atlassian
 
-version: 1.0.0
+version: 20231020.1.1
 readme: README.md
 license:
   - Apache-2.0
