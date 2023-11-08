@@ -15,7 +15,7 @@
 # limitations under the License.
 
 - name: 20-ansible-install | all
-  hosts: all
+  hosts: ansible
   remote_user: root
   become: true
   tasks:

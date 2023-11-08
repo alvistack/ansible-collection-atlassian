@@ -2,6 +2,9 @@
 
 ## YYYYMMDD.Y.Z - TBC
 
+## 20231108.1.1 - 2023-11-08
+
+-   Support Ansible community package 8.6.0
 -   Ininitial release for Ansible 2.10 or higher
 -   This role was designed for:
     -   Ubuntu 20.04, 22.04, 23.04, 23.10
