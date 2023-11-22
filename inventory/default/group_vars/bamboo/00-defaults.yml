@@ -18,4 +18,4 @@
 openjdk_release: "11"
 
 # bamboo
-bamboo_release: "9.3"
+bamboo_release: "9.4"
