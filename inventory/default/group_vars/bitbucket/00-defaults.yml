@@ -21,4 +21,4 @@ git_release: "2.42"
 openjdk_release: "11"
 
 # bitbucket
-bitbucket_release: "8.15"
+bitbucket_release: "8.16"

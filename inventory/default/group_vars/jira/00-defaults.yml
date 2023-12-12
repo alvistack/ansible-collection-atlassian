@@ -18,4 +18,4 @@
 openjdk_release: "11"
 
 # jira
-jira_release: "9.11"
+jira_release: "9.12"
