@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# git
-git_release: "2.42"
-
-# openjdk
-openjdk_release: "11"
-
 # bitbucket
 bitbucket_release: "8.16"
+
+# openjdk
+openjdk_release: "17"
+
+# git
+git_release: "2.42"
