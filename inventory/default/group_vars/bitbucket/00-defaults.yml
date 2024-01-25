@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # bitbucket
-bitbucket_release: "8.16"
+bitbucket_release: "8.17"
 
 # openjdk
 openjdk_release: "17"
