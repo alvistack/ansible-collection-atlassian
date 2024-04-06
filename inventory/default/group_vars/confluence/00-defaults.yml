@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # confluence
-confluence_release: "8.8"
+confluence_release: "8.9"
 
 # openjdk
 openjdk_release: "17"
