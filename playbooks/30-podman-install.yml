@@ -13,35 +13,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: 50-bamboo-install | bamboo
-  hosts: bamboo
+- name: 30-podman-install | all
+  hosts: all
   remote_user: root
   become: true
   tasks:
     - name: include role
       ansible.builtin.include_role:
-        name: cvs
+        name: crun
 
     - name: include role
       ansible.builtin.include_role:
-        name: svn
+        name: containers_common
 
     - name: include role
       ansible.builtin.include_role:
-        name: git
+        name: containernetworking_plugins
 
     - name: include role
       ansible.builtin.include_role:
-        name: mercurial
+        name: conmon
 
     - name: include role
       ansible.builtin.include_role:
-        name: perforce
+        name: skopeo
 
     - name: include role
       ansible.builtin.include_role:
-        name: openjdk
+        name: buildah
 
     - name: include role
       ansible.builtin.include_role:
-        name: bamboo
+        name: podman
