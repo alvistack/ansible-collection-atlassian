@@ -15,10 +15,10 @@
 # limitations under the License.
 
 # bitbucket
-bitbucket_release: "8.19"
+bitbucket_release: "9.2"
 
 # openjdk
 openjdk_release: "17"
 
 # git
-git_release: "2.43"
+git_release: "2.46"
