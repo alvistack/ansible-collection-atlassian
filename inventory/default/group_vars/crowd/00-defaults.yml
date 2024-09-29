@@ -18,4 +18,4 @@
 crowd_release: "6.1"
 
 # openjdk
-openjdk_release: "11"
+openjdk_release: "17"
