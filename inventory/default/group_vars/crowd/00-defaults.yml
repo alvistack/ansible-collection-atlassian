@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # crowd
-crowd_release: "5.3"
+crowd_release: "6.1"
 
 # openjdk
-openjdk_release: "11"
+openjdk_release: "17"
