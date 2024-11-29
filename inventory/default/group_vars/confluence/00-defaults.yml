@@ -18,4 +18,4 @@
 confluence_release: "9.1"
 
 # openjdk
-openjdk_release: "17"
+openjdk_release: "21"
