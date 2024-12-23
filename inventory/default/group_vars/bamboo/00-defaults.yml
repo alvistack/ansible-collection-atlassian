@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # bamboo
-bamboo_release: "10.1"
+bamboo_release: "10.2"
 
 # openjdk
 openjdk_release: "21"
