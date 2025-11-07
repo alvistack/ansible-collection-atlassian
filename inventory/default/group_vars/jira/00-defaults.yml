@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # jira
-jira_release: "11.1"
+jira_release: "11.2"
 
 # openjdk
 openjdk_release: "21"
